@@ -220,19 +220,19 @@ table.data-tbl tr:hover td{background:#F7FAFC}
 // ══════════════════════════════════════════════════════
 // DATA STORE (localStorage)
 // ══════════════════════════════════════════════════════
-const STORAGE_KEY = 'ec_docs_v2';
+const STORAGE_KEY = 'ec_puebla_docs_v2';
 function loadDocs(){ try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[];}catch(e){return[];} }
 function saveDocs(docs){ localStorage.setItem(STORAGE_KEY, JSON.stringify(docs)); }
 function genId(){ return 'DOC-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).substr(2,4).toUpperCase(); }
 
-const DRIVE_KEY = 'ec_drive_config';
+const DRIVE_KEY = 'ec_puebla_drive_config';
 function loadDriveConfig(){ try{return JSON.parse(localStorage.getItem(DRIVE_KEY))||{url:'',connected:false};}catch(e){return{url:'',connected:false};} }
 function saveDriveConfig(cfg){ localStorage.setItem(DRIVE_KEY, JSON.stringify(cfg)); }
 
 // ══════════════════════════════════════════════════════
 // SISTEMA DE ROLES Y ADMIN
 // ══════════════════════════════════════════════════════
-const ADMIN_KEY = 'ec_admin_session';
+const ADMIN_KEY = 'ec_puebla_admin_session';
 const ADMIN_PASSWORD = 'ExpertCell2026'; // Cámbiala por la que quieras
 
 function isAdmin(){ return localStorage.getItem(ADMIN_KEY) === 'true'; }
@@ -261,7 +261,7 @@ function logoutAdmin(){
 // ══════════════════════════════════════════════════════
 // LISTAS DE PERSONAL (dinámicas desde localStorage)
 // ══════════════════════════════════════════════════════
-const LISTS_KEY = 'ec_listas_personal';
+const LISTS_KEY = 'ec_puebla_listas_personal';
 
 const DEFAULT_SUPERVISORES = [
   'Marco Antonio Becerra Olguin',
