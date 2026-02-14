@@ -226,7 +226,8 @@ function saveDocs(docs){ localStorage.setItem(STORAGE_KEY, JSON.stringify(docs))
 function genId(){ return 'DOC-'+Date.now().toString(36).toUpperCase()+Math.random().toString(36).substr(2,4).toUpperCase(); }
 
 const DRIVE_KEY = 'ec_puebla_drive_config';
-function loadDriveConfig(){ try{return JSON.parse(localStorage.getItem(DRIVE_KEY))||{url:'',connected:false};}catch(e){return{url:'',connected:false};} }
+const PUEBLA_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyfZs5ZDU7MjeRzn5Gz2KvvJ9vg8Npa0Uk9IF0nRHGrdP9zpJFMZ1GYoXUcYAV5ruoJ/exec';
+function loadDriveConfig(){ try{return JSON.parse(localStorage.getItem(DRIVE_KEY))||{url:PUEBLA_SCRIPT_URL,connected:true};}catch(e){return{url:PUEBLA_SCRIPT_URL,connected:true};} }
 function saveDriveConfig(cfg){ localStorage.setItem(DRIVE_KEY, JSON.stringify(cfg)); }
 
 // ══════════════════════════════════════════════════════
@@ -263,74 +264,11 @@ function logoutAdmin(){
 // ══════════════════════════════════════════════════════
 const LISTS_KEY = 'ec_puebla_listas_personal';
 
-const DEFAULT_SUPERVISORES = [
-  'Marco Antonio Becerra Olguin',
-  'Jessica Itzel Perez Martinez',
-  'Angelica Guadalupe Cordero Costilla',
-  'Jonathan Arturo Tenorio Del Aguila',
-  'Yelitza Jazmin Orsuna Sanchez',
-  'Perla García Mendez',
-  'Nayeli Osnaya Hernandez'
-];
+const DEFAULT_SUPERVISORES = [];
 
-const DEFAULT_PUESTOS = [
-  'Ejecutivo de ventas',
-  'Agente de mineria',
-  'Supervisor Operativo',
-  'Coordinador',
-  'Gerente',
-  'Mesa de control',
-  'Supervisor de base de datos'
-];
+const DEFAULT_PUESTOS = [];
 
-const DEFAULT_COLABORADORES = [
-  'ANGELICA HERNANDEZ MENESES',
-  'LIZETTE ANAHI ARIAS LIRA',
-  'ERICK RAMIREZ AGUILAR',
-  'SUEMY MARLEN MENDOZA RUIZ',
-  'PAULO SERGIO RUELAS REYES',
-  'VALERIA IDALI DELGADO SOTO',
-  'YESICA RODRIGUEZ VERGARA',
-  'BRENDA ARANTXA VAZQUEZ GARCIA',
-  'BLANCA ESTELA PEREZ TORRES',
-  'DAFNE MABEL GARCIA ROJAS',
-  'GABRIELA LOPEZ TAMAYO',
-  'MARIA GUADALUPE CERRITEÑO MONTOYA',
-  'GUILLERMO SEBASTIAN MATUS RAMIREZ',
-  'MARISOL RODRÍGUEZ GONZÁLEZ',
-  'CARLOS ALFREDO CARMONA LOPEZ',
-  'MARIA TERESA GARCIA BAZALDUA',
-  'CESAR EDUARDO QUINTANILLA BOJORQUEZ',
-  'MARLENE AIDE GALINDO PEREZ',
-  'ALAN ALEXIS LOPEZ CERRITEÑO',
-  'ERIKA DANIELA BARRERA LOZANO',
-  'IAN IVAN SANCHEZ GALLARDO',
-  'DAVID ALEJANDRO LOPEZ BALLESTEROS',
-  'SAID SALVADOR MAGAÑA POBLETE',
-  'DEBORAH YOCELYNE SPINDOLA ROJO',
-  'LLUVIA YATSURI ARELLANO TRUJILLO',
-  'KARLA PATRICIA FARFAN BENITEZ',
-  'CARLOS GABRIEL REYES MONTOYA',
-  'MIRIAM CORINA ORTIZ RIVERA',
-  'JHONATAN GONZALEZ SANTOS',
-  'AMAYRANY JOSELIN GARCIA AZUARA',
-  'KAREN ELENA CARTAS ACEITUNO',
-  'NATHALIA JUSTINE BALDERAS GARCIA',
-  'STEPHANY GUADALUPE ZEPEDA HERNANDEZ',
-  'CINTIA LIZETH OSNAYA HERNANDEZ',
-  'ANA KAREN OSNAYA HERNANDEZ',
-  'ARTURO ISAAC ROMERO SANCHEZ',
-  'TAMANY MADAHI GONZALEZ BARRIENTOS',
-  'KAREN SUAD SANCHEZ ARREDONDO',
-  'MARTHA GUADALUPE MENDEZ ESPINOZA',
-  'MONICA KARINA ZEPEDA HERNANDEZ',
-  'PERLA GARCIA MENDEZ',
-  'NAYELI OSNAYA HERNANDEZ',
-  'MARCO ANTONIO BECERRA OLGUIN',
-  'ANGELICA GUADALUPE CORDERO COSTILLA',
-  'MARIA FERNANDA LOPEZ CERRITEÑO',
-  'JESSICA ITZEL PEREZ MARTINEZ'
-];
+const DEFAULT_COLABORADORES = [];
 
 function loadListas(){
   // Retorna las listas locales (se actualizan desde Drive al iniciar)
