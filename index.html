@@ -681,6 +681,7 @@ function updateBadges(){
   document.getElementById('badge-pln').textContent=docs.filter(d=>d.type==='plantrabajo').length;
   document.getElementById('badge-act').textContent=docs.filter(d=>d.type==='actaadmin').length;
   document.getElementById('badge-baj').textContent=docs.filter(d=>d.type==='baja').length;
+  document.getElementById('badge-com').textContent=docs.filter(d=>d.type==='compromiso').length;
 }
 
 // ══════════════════════════════════════════════════════
@@ -710,8 +711,8 @@ function renderDashboard(){
     const recent = docs.slice().sort((a,b)=>b.createdAt-a.createdAt).slice(0,8);
     h+=`<table class="data-tbl"><thead><tr><th>Folio</th><th>Tipo</th><th>Título</th><th>Fecha</th><th>Estatus</th><th>Evidencia</th><th>Acciones</th></tr></thead><tbody>`;
     recent.forEach(d=>{
-      const typeNames = {minuta:'Minuta',aviso:'Aviso',retroalimentacion:'Retroalim.',plantrabajo:'Plan Trabajo',actaadmin:'Acta Admin.',baja:'Baja'};
-      const typeClasses = {minuta:'badge-minuta',aviso:'badge-aviso',retroalimentacion:'badge-ret',plantrabajo:'badge-pln',actaadmin:'badge-acta',baja:'badge-baja'};
+      const typeNames = {minuta:'Minuta',aviso:'Aviso',retroalimentacion:'Retroalim.',plantrabajo:'Plan Trabajo',actaadmin:'Acta Admin.',baja:'Baja',compromiso:'Compromiso'};
+      const typeClasses = {minuta:'badge-minuta',aviso:'badge-aviso',retroalimentacion:'badge-ret',plantrabajo:'badge-pln',actaadmin:'badge-acta',baja:'badge-baja',compromiso:'badge-comp'};
       const typeClass = typeClasses[d.type]||'badge-aviso';
       const typeName = typeNames[d.type]||d.type;
       const statusClass = d.status==='firmado'?'badge-firmado':d.status==='pendiente'?'badge-pendiente':'badge-borrador';
@@ -744,8 +745,8 @@ function renderDashboard(){
 // ══════════════════════════════════════════════════════
 function renderHistorial(type){
   const docs=loadDocs().filter(d=>d.type===type).sort((a,b)=>b.createdAt-a.createdAt);
-  const typeNames={minuta:'Minutas',aviso:'Avisos',retroalimentacion:'Retroalimentaciones',plantrabajo:'Planes de Trabajo',actaadmin:'Actas Administrativas',baja:'Bajas'};
-  const typeIcons={minuta:'📋',aviso:'📢',retroalimentacion:'💬',plantrabajo:'📊',actaadmin:'⚠️',baja:'🚪'};
+  const typeNames={minuta:'Minutas',aviso:'Avisos',retroalimentacion:'Retroalimentaciones',plantrabajo:'Planes de Trabajo',actaadmin:'Actas Administrativas',baja:'Bajas',compromiso:'Cartas Compromiso'};
+  const typeIcons={minuta:'📋',aviso:'📢',retroalimentacion:'💬',plantrabajo:'📊',actaadmin:'⚠️',baja:'🚪',compromiso:'🤝'};
   const typeName=typeNames[type]||type;
 
   let h=`<div class="table-wrap">
@@ -759,7 +760,7 @@ function renderHistorial(type){
       </select>`;
   
   // Filtros adicionales para retroalimentación
-  if(type === 'retroalimentacion'){
+  if(type === 'retroalimentacion' || type === 'compromiso'){
     h += `<select class="filter-sel" onchange="filterBySupervisor(this.value,'${type}')">
         <option value="">Todos los supervisores</option>
         ${SUPERVISORES.map(s => `<option value="${s}">${s}</option>`).join('')}
@@ -777,7 +778,7 @@ function renderHistorial(type){
     h+=`<div class="empty-state"><div class="icon">${typeIcons[type]||'📄'}</div><h3>No hay ${typeName.toLowerCase()}</h3><p>Crea uno nuevo para comenzar.</p></div>`;
   } else {
     // Encabezados especiales para retroalimentación
-    if(type === 'retroalimentacion'){
+    if(type === 'retroalimentacion' || type === 'compromiso'){
       h+=`<table class="data-tbl" id="tbl-${type}"><thead><tr><th>Folio</th><th>Colaborador</th><th>Supervisor</th><th>Tipo</th><th>Fecha</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody>`;
       docs.forEach(d=>{
         const dd = d.data || {};
