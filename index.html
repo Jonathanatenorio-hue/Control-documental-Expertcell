@@ -1477,6 +1477,7 @@ let formFirmasA=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
 let formFirmasR=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
 let formFirmasP=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
 let formFirmasB=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
+let formFirmasC=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
 
 function resetFormArrays(){
   formAsistentes=[{nombre:'',cargo:'',asistencia:'Presente'},{nombre:'',cargo:'',asistencia:'Presente'},{nombre:'',cargo:'',asistencia:'Presente'}];
@@ -1489,6 +1490,7 @@ function resetFormArrays(){
   formFirmasR=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
   formFirmasP=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
   formFirmasB=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
+  formFirmasC=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
 }
 
 function renderNuevo(){
@@ -1509,6 +1511,7 @@ function renderNuevo(){
     <button class="btn ${newDocType==='plantrabajo'?'btn-pri':'btn-ghost'}" onclick="newDocType='plantrabajo';renderNuevo()">📊 Plan de Trabajo</button>
     <button class="btn ${newDocType==='actaadmin'?'btn-pri':'btn-ghost'}" onclick="newDocType='actaadmin';renderNuevo()">⚠️ Acta Administrativa</button>
     <button class="btn ${newDocType==='baja'?'btn-pri':'btn-ghost'}" onclick="newDocType='baja';renderNuevo()">🚪 Baja</button>
+    <button class="btn ${newDocType==='compromiso'?'btn-pri':'btn-ghost'}" onclick="newDocType='compromiso';renderNuevo()">🤝 Carta Compromiso</button>
   </div>
   <div style="display:flex;gap:22px">
     <div style="flex:1;min-width:0" id="form-area"></div>
@@ -1830,6 +1833,32 @@ function renderFormContent(){
     </div>
     <div class="fg"><label>Tabla o texto adicional</label><textarea id="f-tabla" rows="4" placeholder="Pega aquí tablas de Excel o texto adicional..."></textarea></div>`;
     h+=`<div class="sec-title">✍️ Firmas</div><div id="tbl-firmasB"></div>`;
+  } else if(newDocType==='compromiso'){
+    h+=`<div class="sec-title">🤝 Carta Compromiso</div>
+    <div class="grid2">
+      <div class="fg"><label>Folio</label><input id="f-cfolio" value="EC-COM-${String(loadDocs().filter(d=>d.type==='compromiso').length+1).padStart(3,'0')}"></div>
+      <div class="fg"><label>Fecha <span class="req">*</span></label><input type="date" id="f-cfecha"></div>
+      <div class="fg"><label>Colaborador <span class="req">*</span></label><select id="f-ccolaborador">${optionsList(COLABORADORES)}</select></div>
+      <div class="fg"><label>Puesto</label><select id="f-cpuesto">${optionsList(PUESTOS)}</select></div>
+      <div class="fg"><label>Área</label><select id="f-carea"><option>Edificio Inbursa</option><option>Torre JV</option><option>Administrativos</option><option>Operacion de ventas</option><option>Mineria</option><option>Control documental</option><option>Coordinacion</option><option>Supervision</option></select></div>
+      <div class="fg"><label>Supervisor</label><select id="f-csupervisor">${optionsList(SUPERVISORES)}</select></div>
+    </div>
+    <div class="fg"><label>Compromiso</label><select id="f-ctipo"><option>Metas</option><option>Comportamiento</option><option>Faltas (Ausentismo)</option><option>Retardos</option></select></div>
+    <div class="fg"><label>Motivo / Situación</label><textarea id="f-cmotivo" rows="3" placeholder="Describe la situación que genera el compromiso..."></textarea></div>
+    <div class="fg"><label>Detalle del Compromiso</label><textarea id="f-ccontenido" rows="4" placeholder="Detalle del compromiso que asume el colaborador..."></textarea></div>
+    <div class="fg"><label>Consecuencias de incumplimiento</label><textarea id="f-cconsecuencias" rows="3" placeholder="Qué sucede si no se cumple el compromiso..."></textarea></div>
+    <div class="fg"><label>Fecha de Seguimiento</label><input id="f-cseguimiento" type="date"></div>`;
+    h+=`<div class="sec-title">📎 Anexos</div>
+    <div class="fg">
+      <div class="upload-zone" onclick="document.getElementById('anexos-input').click()" style="margin-bottom:10px">
+        <div class="upload-icon">🖼️</div>
+        <div class="upload-text"><b>Clic para agregar imágenes</b></div>
+      </div>
+      <input type="file" id="anexos-input" accept="image/*" multiple style="display:none" onchange="handleAnexos(this)">
+      <div id="anexos-preview"></div>
+    </div>
+    <div class="fg"><label>Tabla o texto adicional</label><textarea id="f-tabla" rows="4" placeholder="Pega aquí tablas de Excel o texto adicional..."></textarea></div>`;
+    h+=`<div class="sec-title">✍️ Firmas</div><div id="tbl-firmasC"></div>`;
   }
 
   h+=`<div style="padding:20px 0;display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
