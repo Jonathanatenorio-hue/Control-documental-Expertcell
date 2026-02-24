@@ -78,6 +78,7 @@ table.data-tbl tr:hover td{background:#F7FAFC}
 .badge-pln{background:#E3F2FD;color:#1565C0}
 .badge-acta{background:#FFEBEE;color:#C62828}
 .badge-baja{background:#F3E5F5;color:#7B1FA2}
+.badge-comp{background:#FFF8E1;color:#F57F17}
 .badge-firmado{background:var(--oklt);color:var(--ok)}
 .badge-pendiente{background:var(--warnlt);color:var(--warn)}
 .badge-borrador{background:#F1F1F1;color:#888}
@@ -329,6 +330,7 @@ async function doLogin() {
     <button class="sb-item" onclick="showPage('planes')"><span class="icon">📊</span><span>Planes</span><span class="sb-badge" id="badge-pln">0</span></button>
     <button class="sb-item" onclick="showPage('actas')"><span class="icon">⚠️</span><span>Actas</span><span class="sb-badge" id="badge-act">0</span></button>
     <button class="sb-item" onclick="showPage('bajas')"><span class="icon">🚪</span><span>Bajas</span><span class="sb-badge" id="badge-baj">0</span></button>
+    <button class="sb-item" onclick="showPage('compromisos')"><span class="icon">🤝</span><span>Compromisos</span><span class="sb-badge" id="badge-com">0</span></button>
     <div class="sb-section">Sistema</div>
     <button class="sb-item" onclick="showPage('drive')"><span class="icon">☁️</span><span>Google Drive</span></button>
     <button class="sb-item" onclick="accessAdmin()"><span class="icon">🔐</span><span>Administración</span></button>
@@ -662,12 +664,12 @@ let currentPage = 'dashboard';
 function showPage(page){
   currentPage = page;
   document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
-  const labels = {dashboard:'Dashboard',nuevo:'Nuevo Documento',minutas:'Minutas',avisos:'Avisos',retroalimentaciones:'Retroalimentaciones',planes:'Planes de Trabajo',actas:'Actas Administrativas',bajas:'Bajas',drive:'Configuración Google Drive',admin:'Administración'};
+  const labels = {dashboard:'Dashboard',nuevo:'Nuevo Documento',minutas:'Minutas',avisos:'Avisos',retroalimentaciones:'Retroalimentaciones',planes:'Planes de Trabajo',actas:'Actas Administrativas',bajas:'Bajas',compromisos:'Cartas Compromiso',drive:'Configuración Google Drive',admin:'Administración'};
   document.getElementById('page-title').textContent = labels[page]||'';
-  const navMap = {dashboard:0,nuevo:1,minutas:2,avisos:3,retroalimentaciones:4,planes:5,actas:6,bajas:7,drive:8,admin:9};
+  const navMap = {dashboard:0,nuevo:1,minutas:2,avisos:3,retroalimentaciones:4,planes:5,actas:6,bajas:7,compromisos:8,drive:9,admin:10};
   if(navMap[page]!==undefined) document.querySelectorAll('.sb-item')[navMap[page]]?.classList.add('active');
   updateBadges();
-  const renderers = {dashboard:renderDashboard,nuevo:renderNuevo,minutas:()=>renderHistorial('minuta'),avisos:()=>renderHistorial('aviso'),retroalimentaciones:()=>renderHistorial('retroalimentacion'),planes:()=>renderHistorial('plantrabajo'),actas:()=>renderHistorial('actaadmin'),bajas:()=>renderHistorial('baja'),drive:renderDrive,admin:renderAdmin};
+  const renderers = {dashboard:renderDashboard,nuevo:renderNuevo,minutas:()=>renderHistorial('minuta'),avisos:()=>renderHistorial('aviso'),retroalimentaciones:()=>renderHistorial('retroalimentacion'),planes:()=>renderHistorial('plantrabajo'),actas:()=>renderHistorial('actaadmin'),bajas:()=>renderHistorial('baja'),compromisos:()=>renderHistorial('compromiso'),drive:renderDrive,admin:renderAdmin};
   (renderers[page]||renderDashboard)();
 }
 
