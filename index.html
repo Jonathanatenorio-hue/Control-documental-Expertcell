@@ -172,6 +172,140 @@ table.data-tbl tr:hover td{background:#F7FAFC}
 </style>
 </head>
 <body>
+  
+<!--
+═══════════════════════════════════════════════════════════════
+  LOGIN GATE — Pegar este bloque JUSTO DESPUÉS de <body>
+  en cada gestor documental.
+  
+  Para Gestor Puebla:  ALLOWED_CENTROS = [6, 7]
+  Para Gestor Yelitza: ALLOWED_CENTROS = [8]
+═══════════════════════════════════════════════════════════════
+-->
+<div id="login-gate" style="position:fixed;inset:0;z-index:99999;background:#0a0f1a;display:flex;align-items:center;justify-content:center;font-family:'Segoe UI',system-ui,sans-serif">
+  <div style="background:#111827;border:1px solid #1e2d45;border-radius:20px;padding:40px;width:380px;max-width:90vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5)">
+    <div style="width:56px;height:56px;background:linear-gradient(135deg,#009fdb,#0568ae);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;font-weight:900;color:#fff">EC</div>
+    <h2 style="color:#e8ecf4;font-size:22px;font-weight:800;margin-bottom:4px">Gestor Documental</h2>
+    <p style="color:#8b99b0;font-size:13px;margin-bottom:28px">Ingresa tus credenciales para continuar</p>
+    <div id="login-error" style="display:none;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:16px;font-weight:600"></div>
+    <input id="login-attuid" type="text" placeholder="ATTUID" autocomplete="username" style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid #1e2d45;background:#1a2236;color:#e8ecf4;font-size:15px;font-family:inherit;margin-bottom:12px;outline:none;transition:border .2s" onfocus="this.style.borderColor='#0ea5e9'" onblur="this.style.borderColor='#1e2d45'">
+    <input id="login-pin" type="password" placeholder="PIN" autocomplete="current-password" style="width:100%;padding:14px 16px;border-radius:10px;border:1px solid #1e2d45;background:#1a2236;color:#e8ecf4;font-size:15px;font-family:inherit;margin-bottom:20px;outline:none;transition:border .2s" onfocus="this.style.borderColor='#0ea5e9'" onblur="this.style.borderColor='#1e2d45'" onkeydown="if(event.key==='Enter')document.getElementById('login-btn').click()">
+    <button id="login-btn" onclick="doLogin()" style="width:100%;padding:14px;border-radius:10px;border:none;background:linear-gradient(135deg,#0ea5e9,#0369a1);color:#fff;font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:opacity .2s" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Ingresar</button>
+    <p style="color:#475569;font-size:11px;margin-top:16px">Usa tus credenciales del CRM</p>
+  </div>
+</div>
+
+<script>
+// ═══ CONFIGURACIÓN ═══
+// CAMBIAR según la operación:
+// Puebla:     const ALLOWED_CENTROS = [6, 7];
+// Sub Yelitza: const ALLOWED_CENTROS = [8];
+const ALLOWED_CENTROS = [6, 7]; // ← CAMBIAR PARA CADA GESTOR
+
+const SUPABASE_URL = 'https://smytiyjzmzbmcllivxkc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNteXRpeWp6bXpibWNsbGl2eGtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MTIwNzQsImV4cCI6MjA4NzM4ODA3NH0.KScWdne5ItM-iXtdKWuy75lXUUORJqmwRzp7z0W7OMo';
+const ADMIN_ATTUID = 'jt2908';
+const ALLOWED_ROLES = ['supervisor', 'coordinador', 'gerente', 'admin'];
+const SESSION_KEY = 'ec_gestor_session';
+
+// ═══ CHECK SESIÓN EXISTENTE ═══
+(function checkSession() {
+  try {
+    var s = JSON.parse(sessionStorage.getItem(SESSION_KEY));
+    if (s && s.attuid && s.ts && (Date.now() - s.ts < 8 * 3600000)) {
+      // Sesión válida (8 horas)
+      document.getElementById('login-gate').style.display = 'none';
+    }
+  } catch(e) {}
+})();
+
+// ═══ LOGIN ═══
+async function doLogin() {
+  var btn = document.getElementById('login-btn');
+  var errDiv = document.getElementById('login-error');
+  var attuid = document.getElementById('login-attuid').value.trim().toUpperCase();
+  var pin = document.getElementById('login-pin').value.trim();
+  
+  errDiv.style.display = 'none';
+  
+  if (!attuid || !pin) {
+    errDiv.textContent = 'Ingresa ATTUID y PIN';
+    errDiv.style.display = 'block';
+    return;
+  }
+  
+  btn.textContent = 'Verificando...';
+  btn.disabled = true;
+  
+  try {
+    var res = await fetch(SUPABASE_URL + '/rest/v1/usuarios?attuid=eq.' + attuid.toLowerCase() + '&select=attuid,nombre,pin,rol,centro_id', {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY
+      }
+    });
+    
+    if (!res.ok) throw new Error('Error de conexión');
+    
+    var data = await res.json();
+    
+    if (!data || data.length === 0) {
+      showError('ATTUID no encontrado');
+      return;
+    }
+    
+    var user = data[0];
+    
+    // Verificar PIN
+    if (String(user.pin) !== String(pin)) {
+      showError('PIN incorrecto');
+      return;
+    }
+    
+    // Verificar rol
+    if (!ALLOWED_ROLES.includes(user.rol)) {
+      showError('No tienes permisos para acceder');
+      return;
+    }
+    
+    // Admin tiene acceso a todo
+    if (user.rol === 'admin' || user.attuid === ADMIN_ATTUID) {
+      grantAccess(user);
+      return;
+    }
+    
+    // Verificar centro_id
+    if (!ALLOWED_CENTROS.includes(user.centro_id)) {
+      showError('No tienes acceso a esta operación');
+      return;
+    }
+    
+    grantAccess(user);
+    
+  } catch(e) {
+    showError('Error de conexión. Intenta de nuevo.');
+    console.error(e);
+  }
+  
+  function showError(msg) {
+    errDiv.textContent = msg;
+    errDiv.style.display = 'block';
+    btn.textContent = 'Ingresar';
+    btn.disabled = false;
+  }
+  
+  function grantAccess(user) {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+      attuid: user.attuid,
+      nombre: user.nombre,
+      rol: user.rol,
+      ts: Date.now()
+    }));
+    document.getElementById('login-gate').style.display = 'none';
+  }
+}
+</script>
+<!-- ═══ FIN LOGIN GATE ═══ -->
 
 <!-- ═══ SIDEBAR ═══ -->
 <nav class="sidebar">
