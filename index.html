@@ -1092,6 +1092,20 @@ function editDoc(id){
       document.getElementById('f-bmetodo').value = dd.metodoPago || '';
       document.getElementById('f-tabla').value = dd.tabla || '';
       if(dd.firmas?.length){formFirmasB = dd.firmas; renderMiniTable('tbl-firmasB',[{key:'nombre',label:'Nombre',ph:'Nombre'},{key:'cargo',label:'Cargo',ph:'Cargo'}],formFirmasB,'formFirmasB');}
+    } else if(d.type === 'compromiso'){
+      document.getElementById('f-cfolio').value = d.folio || '';
+      document.getElementById('f-cfecha').value = dd.fecha || '';
+      document.getElementById('f-ccolaborador').value = dd.colaborador || '';
+      document.getElementById('f-cpuesto').value = dd.puesto || '';
+      document.getElementById('f-carea').value = dd.area || '';
+      document.getElementById('f-csupervisor').value = dd.supervisor || '';
+      document.getElementById('f-ctipo').value = dd.tipo || '';
+      document.getElementById('f-cmotivo').value = dd.motivo || '';
+      document.getElementById('f-ccontenido').value = dd.contenido || '';
+      document.getElementById('f-cconsecuencias').value = dd.consecuencias || '';
+      document.getElementById('f-cseguimiento').value = dd.seguimiento || '';
+      document.getElementById('f-tabla').value = dd.tabla || '';
+      if(dd.firmas?.length){formFirmasC = dd.firmas; renderMiniTable('tbl-firmasC',[{key:'nombre',label:'Nombre',type:'colaborador'},{key:'cargo',label:'Cargo',type:'puesto'}],formFirmasC,'formFirmasC');}
     }
     
     // Load anexos if any
@@ -1885,6 +1899,8 @@ function renderFormContent(){
       renderMiniTable('tbl-firmasP',[{key:'nombre',label:'Nombre',type:'colaborador'},{key:'cargo',label:'Cargo',type:'puesto'}],formFirmasP,'formFirmasP');
     } else if(newDocType==='baja'){
       renderMiniTable('tbl-firmasB',[{key:'nombre',label:'Nombre',type:'colaborador'},{key:'cargo',label:'Cargo',type:'puesto'}],formFirmasB,'formFirmasB');
+    } else if(newDocType==='compromiso'){
+      renderMiniTable('tbl-firmasC',[{key:'nombre',label:'Nombre',type:'colaborador'},{key:'cargo',label:'Cargo',type:'puesto'}],formFirmasC,'formFirmasC');
     }
   },0);
 }
@@ -2020,7 +2036,7 @@ function ejecutarCargarEquipo(ref, containerId, colsB64){
 }
 
 function getFormRef(ref){
-  const m={formAsistentes,formOrden,formDesarrollo,formAcuerdos,formFirmasM,formAcciones,formFirmasA,formFirmasR,formFirmasP,formFirmasB};
+  const m={formAsistentes,formOrden,formDesarrollo,formAcuerdos,formFirmasM,formAcciones,formFirmasA,formFirmasR,formFirmasP,formFirmasB,formFirmasC};
   return m[ref];
 }
 function updateFormRow(ref,i,k,v){getFormRef(ref)[i][k]=v;}
@@ -2205,6 +2221,16 @@ function collectDocData(){
         firmas:formFirmasB.filter(f=>f.nombre),
         anexos:anexos,tabla:tabla}
     };
+  } else if(newDocType==='compromiso'){
+    return {
+      type:'compromiso', folio:V('f-cfolio'), title:`Carta Compromiso – ${V('f-ccolaborador')}`,
+      displayDate:fmtDate(V('f-cfecha')), status:'pendiente',
+      data:{fecha:V('f-cfecha'),colaborador:V('f-ccolaborador'),puesto:V('f-cpuesto'),
+        area:V('f-carea'),supervisor:V('f-csupervisor'),tipo:V('f-ctipo'),
+        motivo:V('f-cmotivo'),contenido:V('f-ccontenido'),consecuencias:V('f-cconsecuencias'),seguimiento:V('f-cseguimiento'),
+        firmas:formFirmasC.filter(f=>f.nombre),
+        anexos:anexosData.slice(),tabla:V('f-tabla')}
+    };
   }
 }
 
@@ -2263,7 +2289,7 @@ function generateDocPDF(d){
   doc.setDrawColor(27,117,187);doc.setLineWidth(0.7);doc.line(0,26,pageWidth,26);y=32;
 
   const dd=d.data||{};
-  const typeNames={minuta:'Minuta',aviso:'Aviso',retroalimentacion:'Retroalimentación',plantrabajo:'Plan de Trabajo',actaadmin:'Acta Administrativa',baja:'Baja de Personal'};
+  const typeNames={minuta:'Minuta',aviso:'Aviso',retroalimentacion:'Retroalimentación',plantrabajo:'Plan de Trabajo',actaadmin:'Acta Administrativa',baja:'Baja de Personal',compromiso:'Carta Compromiso'};
   const maxY = pageHeight - 40; // Espacio amplio para el footer
   
   const addFooter=(pn)=>{
@@ -2663,6 +2689,18 @@ function generateDocPDF(d){
       });
     }
     // Firmas baja
+    if(dd.firmas?.length){checkPage();sec('Firmas');y+=12;const sp=(textWidth)/dd.firmas.length;dd.firmas.forEach((f,i)=>{const cx=m+sp*i+sp/2;doc.setDrawColor(74,74,74);doc.setLineWidth(.4);doc.line(cx-25,y,cx+25,y);doc.setFontSize(9);doc.setTextColor(74,74,74);doc.setFont('helvetica','bold');doc.text(f.nombre||'',cx,y+5,{align:'center'});doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(113,128,150);doc.text(f.cargo||'',cx,y+9,{align:'center'});});}
+  } else if(d.type==='compromiso'){
+    doc.setFillColor(245,127,23);doc.roundedRect(m,y,textWidth,18,3,3,'F');
+    doc.setFontSize(20);doc.setTextColor(255);doc.setFont('helvetica','bold');doc.text('CARTA COMPROMISO',pageWidth/2,y+10,{align:'center'});
+    doc.setFontSize(9);doc.setTextColor(255,249,196);doc.text(`${dd.tipo||''}`,pageWidth/2,y+15.5,{align:'center'});y+=24;
+    doc.autoTable({startY:y,...tblOpts,columnStyles:{0:{cellWidth:40,fillColor:[255,248,225],fontStyle:'bold',textColor:[230,81,0]}},body:[
+      ['Folio:',d.folio||''],['Fecha:',fmtDate(dd.fecha)],['Colaborador:',dd.colaborador||''],['Puesto:',dd.puesto||''],['Área:',dd.area||''],['Supervisor:',dd.supervisor||''],['Compromiso:',dd.tipo||'']
+    ]});y=doc.lastAutoTable.finalY+6;
+    if(dd.motivo){sec('Motivo / Situación');addText(dd.motivo);}
+    if(dd.contenido){sec('Detalle del Compromiso');addText(dd.contenido);}
+    if(dd.consecuencias){sec('Consecuencias de Incumplimiento');addText(dd.consecuencias);}
+    if(dd.seguimiento){sec('Fecha de Seguimiento');addText(fmtDate(dd.seguimiento));}
     if(dd.firmas?.length){checkPage();sec('Firmas');y+=12;const sp=(textWidth)/dd.firmas.length;dd.firmas.forEach((f,i)=>{const cx=m+sp*i+sp/2;doc.setDrawColor(74,74,74);doc.setLineWidth(.4);doc.line(cx-25,y,cx+25,y);doc.setFontSize(9);doc.setTextColor(74,74,74);doc.setFont('helvetica','bold');doc.text(f.nombre||'',cx,y+5,{align:'center'});doc.setFontSize(8);doc.setFont('helvetica','normal');doc.setTextColor(113,128,150);doc.text(f.cargo||'',cx,y+9,{align:'center'});});}
   }
 
