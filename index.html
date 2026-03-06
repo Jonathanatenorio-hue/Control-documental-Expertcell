@@ -1431,7 +1431,7 @@ function renderFormContent(){
       <div class="fg" id="fg-nivel" style="display:none"><label>Nivel de Junta</label><select id="f-nivel"><option>Gerencia</option><option>Coordinación</option><option>Supervisión</option></select></div>
       <div class="fg"><label>Folio</label><input id="f-folio" value="EC-MIN-${String(loadDocs().filter(d=>d.type==='minuta').length+1).padStart(3,'0')}"></div>
       <div class="fg"><label>Fecha <span class="req">*</span></label><input type="date" id="f-fecha"></div>
-      <div class="fg"><label>Centro</label><select id="f-ubicacion"><option>Edificio Inbursa</option><option>Torre JV</option></select></div>
+      <div class="fg"><label>Centro</label><select id="f-ubicacion"><option>Operación Global</option><option>Edificio Inbursa</option><option>Torre JV</option></select></div>
       <div class="fg"><label>Campaña</label><select id="f-campana"><option>ATT</option><option>IZZI</option></select></div>
       <div class="fg"><label>Hora inicio</label><input type="time" id="f-hinicio"></div>
       <div class="fg"><label>Hora término</label><input type="time" id="f-hfin"></div>
@@ -1481,11 +1481,11 @@ function renderFormContent(){
       <div class="fg"><label>Tipo</label><select id="f-atipo"><option>Informativo</option><option>Cambio operativo</option><option>Política</option><option>Urgente</option><option>Oferta comercial</option><option>Dinamicas</option><option>Otros</option></select></div>
       <div class="fg"><label>Folio</label><input id="f-afolio" value="EC-AVI-${String(loadDocs().filter(d=>d.type==='aviso').length+1).padStart(3,'0')}"></div>
       <div class="fg"><label>Fecha <span class="req">*</span></label><input type="date" id="f-afecha"></div>
-      <div class="fg"><label>Centro</label><select id="f-acentro"><option>Edificio Inbursa</option><option>Torre JV</option><option>Ambos</option></select></div>
+      <div class="fg"><label>Centro</label><select id="f-acentro"><option>Operación Global</option><option>Edificio Inbursa</option><option>Torre JV</option><option>Ambos</option></select></div>
       <div class="fg"><label>Campaña</label><select id="f-acampana"><option>ATT</option><option>IZZI</option><option>Ambas</option></select></div>
       <div class="fg"><label>Vigencia</label><input id="f-avigencia" placeholder="Permanente / Fechas"></div>
       <div class="fg"><label>Emitido por <span class="req">*</span></label><select id="f-aemitido">${optionsList(SUPERVISORES)}</select></div>
-      <div class="fg"><label>Dirigido a</label><select id="f-adirigido"><option>Todo el personal</option><option>Edificio Inbursa</option><option>Torre JV</option><option>Campaña ATT</option><option>Campaña IZZI</option><option>Supervisores</option><option>Agentes</option><option>Administrativos</option></select></div>
+      <div class="fg"><label>Dirigido a</label><select id="f-adirigido"><option>Todo el personal</option><option>Operación Global</option><option>Edificio Inbursa</option><option>Torre JV</option><option>Campaña ATT</option><option>Campaña IZZI</option><option>Supervisores</option><option>Agentes</option><option>Administrativos</option></select></div>
     </div>
     <div class="fg"><label>Prioridad</label><select id="f-aprioridad"><option>Normal</option><option>Importante</option><option>Urgente</option></select></div>`;
 
@@ -1514,7 +1514,7 @@ function renderFormContent(){
       <div class="fg"><label>Fecha <span class="req">*</span></label><input type="date" id="f-rfecha"></div>
       <div class="fg"><label>Colaborador <span class="req">*</span></label><select id="f-rcolaborador" onchange="autoFillColaboradorData()">${optionsList(COLABORADORES)}</select></div>
       <div class="fg"><label>Puesto</label><select id="f-rpuesto">${optionsList(PUESTOS)}</select></div>
-      <div class="fg"><label>Centro</label><select id="f-rcentro"><option>Edificio Inbursa</option><option>Torre JV</option></select></div>
+      <div class="fg"><label>Centro</label><select id="f-rcentro"><option>Operación Global</option><option>Edificio Inbursa</option><option>Torre JV</option></select></div>
       <div class="fg"><label>Campaña</label><select id="f-rcampana"><option>ATT</option><option>IZZI</option></select></div>
       <div class="fg"><label>Supervisor</label><select id="f-rsupervisor">${optionsList(SUPERVISORES)}</select></div>
     </div>
