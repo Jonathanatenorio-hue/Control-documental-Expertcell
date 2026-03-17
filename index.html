@@ -1372,11 +1372,13 @@ let formOrden=[{horario:'',tema:'',responsable:''},{horario:'',tema:'',responsab
 let formDesarrollo=[{tema:'',descripcion:'',decision:''}];
 let formAcuerdos=[{compromiso:'',responsable:'',fecha:'',prioridad:'Alta',estatus:'Pendiente'}];
 let formMetas=[{responsable:'',meta:'',indicador:'',periodo:'Mensual',fechaLimite:''}];
+let formCompromisos=[{compromiso:'',fechaLimite:'',indicador:''}];
 let formFirmasM=[{nombre:'',cargo:''},{nombre:'',cargo:''},{nombre:'',cargo:''}];
 let formAcciones=[{accion:'',responsable:'',fecha:''}];
 let formFirmasA=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
 let formFirmasR=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
 let formFirmasP=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
+let formFirmasCC=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
 let formFirmasB=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
 
 function resetFormArrays(){
@@ -1385,11 +1387,13 @@ function resetFormArrays(){
   formDesarrollo=[{tema:'',descripcion:'',decision:''}];
   formAcuerdos=[{compromiso:'',responsable:'',fecha:'',prioridad:'Alta',estatus:'Pendiente'}];
   formMetas=[{responsable:'',meta:'',indicador:'',periodo:'Mensual',fechaLimite:''}];
+  formCompromisos=[{compromiso:'',fechaLimite:'',indicador:''}];
   formFirmasM=[{nombre:'',cargo:''},{nombre:'',cargo:''},{nombre:'',cargo:''}];
   formAcciones=[{accion:'',responsable:'',fecha:''}];
   formFirmasA=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
   formFirmasR=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
   formFirmasP=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
+  formFirmasCC=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
   formFirmasB=[{nombre:'',cargo:''},{nombre:'',cargo:''}];
 }
 
@@ -1409,6 +1413,7 @@ function renderNuevo(){
     <button class="btn ${newDocType==='aviso'?'btn-pri':'btn-ghost'}" onclick="newDocType='aviso';renderNuevo()">📢 Aviso</button>
     <button class="btn ${newDocType==='retroalimentacion'?'btn-pri':'btn-ghost'}" onclick="newDocType='retroalimentacion';renderNuevo()">💬 Retroalimentación</button>
     <button class="btn ${newDocType==='plantrabajo'?'btn-pri':'btn-ghost'}" onclick="newDocType='plantrabajo';renderNuevo()">📊 Plan de Trabajo</button>
+    <button class="btn ${newDocType==='cartacompromiso'?'btn-pri':'btn-ghost'}" onclick="newDocType='cartacompromiso';renderNuevo()">📝 Carta Compromiso</button>
     <button class="btn ${newDocType==='actaadmin'?'btn-pri':'btn-ghost'}" onclick="newDocType='actaadmin';renderNuevo()">⚠️ Acta Administrativa</button>
     <button class="btn ${newDocType==='baja'?'btn-pri':'btn-ghost'}" onclick="newDocType='baja';renderNuevo()">🚪 Baja</button>
   </div>
@@ -1669,6 +1674,36 @@ function renderFormContent(){
       <div id="anexos-preview"></div>
     </div>
     <div class="fg"><label>Tabla o texto adicional</label><textarea id="f-tabla" rows="4" placeholder="Pega aquí tablas de Excel o texto adicional..."></textarea></div>`;
+  } else if(newDocType==='cartacompromiso'){
+    h+=`<div class="sec-title">📝 Carta Compromiso</div>
+    <div class="grid2">
+      <div class="fg"><label>Folio</label><input id="f-ccfolio" value="EC-CC-${String(loadDocs().filter(d=>d.type==='cartacompromiso').length+1).padStart(3,'0')}"></div>
+      <div class="fg"><label>Fecha <span class="req">*</span></label><input type="date" id="f-ccfecha"></div>
+      <div class="fg"><label>Colaborador <span class="req">*</span></label><select id="f-cccolaborador">${optionsList(COLABORADORES)}</select></div>
+      <div class="fg"><label>Puesto</label><select id="f-ccpuesto">${optionsList(PUESTOS)}</select></div>
+      <div class="fg"><label>Centro</label><select id="f-cccentro"><option>Operación Global</option><option>Edificio Inbursa</option><option>Torre JV</option></select></div>
+      <div class="fg"><label>Supervisor</label><select id="f-ccsupervisor">${optionsList(SUPERVISORES)}</select></div>
+    </div>
+    
+    <div class="sec-title">📋 Motivo de la Carta</div>
+    <div class="fg"><label>Tipo de Situación</label><select id="f-cctipo"><option>Bajo rendimiento</option><option>Incumplimiento de indicadores</option><option>Faltas de asistencia</option><option>Retardos recurrentes</option><option>Comportamiento inadecuado</option><option>Incumplimiento de políticas</option><option>Otro</option></select></div>
+    <div class="fg"><label>Descripción de la Situación <span class="req">*</span></label><textarea id="f-ccsituacion" rows="3" placeholder="Describe la situación o problema que origina esta carta..."></textarea></div>
+    <div class="fg"><label>Antecedentes</label><textarea id="f-ccantecedentes" rows="2" placeholder="Llamadas de atención previas, retroalimentaciones, etc..."></textarea></div>
+    
+    <div class="sec-title">🎯 Compromisos</div>
+    <div id="tbl-compromisos"></div>
+    
+    <div class="sec-title">⚠️ Consecuencias</div>
+    <div class="fg"><label>Consecuencias de Incumplimiento</label><textarea id="f-ccconsecuencias" rows="2" placeholder="Acciones que se tomarán si no se cumplen los compromisos...">En caso de no cumplir con los compromisos establecidos, se procederá con las medidas disciplinarias correspondientes, que pueden incluir la rescisión del contrato laboral.</textarea></div>
+    
+    <div class="sec-title">📆 Seguimiento</div>
+    <div class="grid2">
+      <div class="fg"><label>Fecha de Revisión</label><input type="date" id="f-ccrevision"></div>
+      <div class="fg"><label>Responsable de Seguimiento</label><select id="f-ccresponsable">${optionsList(SUPERVISORES)}</select></div>
+    </div>
+    <div class="fg"><label>Observaciones</label><textarea id="f-ccobs" rows="2" placeholder="Notas adicionales..."></textarea></div>
+    
+    <div class="sec-title">✍️ Firmas</div><div id="tbl-firmasCC"></div>`;
   } else if(newDocType==='baja'){
     h+=`<div class="sec-title">🚪 Baja de Personal</div>
     <div class="grid2">
@@ -1764,6 +1799,9 @@ function renderFormContent(){
       renderMiniTable('tbl-firmasR',[{key:'nombre',label:'Nombre',type:'colaborador'},{key:'cargo',label:'Cargo',type:'puesto'}],formFirmasR,'formFirmasR');
     } else if(newDocType==='plantrabajo'){
       renderMiniTable('tbl-firmasP',[{key:'nombre',label:'Nombre',type:'colaborador'},{key:'cargo',label:'Cargo',type:'puesto'}],formFirmasP,'formFirmasP');
+    } else if(newDocType==='cartacompromiso'){
+      renderMiniTable('tbl-compromisos',[{key:'compromiso',label:'Compromiso',ph:'Descripción del compromiso'},{key:'fechaLimite',label:'Fecha Límite',type:'date'},{key:'indicador',label:'Indicador de Cumplimiento',ph:'Cómo se medirá'}],formCompromisos,'formCompromisos');
+      renderMiniTable('tbl-firmasCC',[{key:'nombre',label:'Nombre',type:'colaborador'},{key:'cargo',label:'Cargo',type:'puesto'}],formFirmasCC,'formFirmasCC');
     } else if(newDocType==='baja'){
       renderMiniTable('tbl-firmasB',[{key:'nombre',label:'Nombre',type:'colaborador'},{key:'cargo',label:'Cargo',type:'puesto'}],formFirmasB,'formFirmasB');
     }
@@ -1901,7 +1939,7 @@ function ejecutarCargarEquipo(ref, containerId, colsB64){
 }
 
 function getFormRef(ref){
-  const m={formAsistentes,formOrden,formDesarrollo,formAcuerdos,formMetas,formFirmasM,formAcciones,formFirmasA,formFirmasR,formFirmasP,formFirmasB};
+  const m={formAsistentes,formOrden,formDesarrollo,formAcuerdos,formMetas,formCompromisos,formFirmasM,formAcciones,formFirmasA,formFirmasR,formFirmasP,formFirmasCC,formFirmasB};
   return m[ref];
 }
 function updateFormRow(ref,i,k,v){getFormRef(ref)[i][k]=v;}
@@ -2069,6 +2107,19 @@ function collectDocData(){
         acuerdos:V('f-aaacuerdos'),fechaRevision:V('f-aarevision'),responsableSeguimiento:V('f-aaresponsable'),
         firmaColaborador:V('f-aafirma1'),firmaSupervisor:V('f-aafirma2'),firmaEmite:V('f-aafirma3'),firmaTestigo:V('f-aafirma4'),
         anexos:anexos,tabla:tabla}
+    };
+  } else if(newDocType==='cartacompromiso'){
+    return {
+      type:'cartacompromiso', folio:V('f-ccfolio'), title:`Carta Compromiso – ${V('f-cccolaborador')}`,
+      displayDate:fmtDate(V('f-ccfecha')), status:'pendiente',
+      data:{fecha:V('f-ccfecha'),colaborador:V('f-cccolaborador'),puesto:V('f-ccpuesto'),
+        centro:V('f-cccentro'),supervisor:V('f-ccsupervisor'),
+        tipo:V('f-cctipo'),situacion:V('f-ccsituacion'),antecedentes:V('f-ccantecedentes'),
+        compromisos:formCompromisos.filter(c=>c.compromiso),
+        consecuencias:V('f-ccconsecuencias'),
+        fechaRevision:V('f-ccrevision'),responsableSeguimiento:V('f-ccresponsable'),
+        observaciones:V('f-ccobs'),
+        firmas:formFirmasCC.filter(f=>f.nombre)}
     };
   } else if(newDocType==='baja'){
     const finiquito = calcularFiniquito();
@@ -2503,6 +2554,74 @@ function generateDocPDF(d){
             doc.setFontSize(8);doc.setTextColor(113,128,150);doc.text(img.name||('Imagen '+(idx+1)),m,y);y+=6;
           }
         }catch(e){}
+      });
+    }
+
+  } else if(d.type==='cartacompromiso'){
+    doc.setFillColor(230,126,34);doc.roundedRect(m,y,textWidth,18,3,3,'F');
+    doc.setFontSize(20);doc.setTextColor(255);doc.setFont('helvetica','bold');doc.text('CARTA COMPROMISO',pageWidth/2,y+10,{align:'center'});
+    doc.setFontSize(9);doc.setTextColor(255,220,180);doc.text(`${dd.tipo||''}     Folio: ${d.folio||''}`,pageWidth/2,y+15.5,{align:'center'});y+=24;
+
+    sec('Datos del Colaborador');
+    doc.autoTable({startY:y,...tblOpts,columnStyles:{0:{cellWidth:45,fillColor:[253,235,220],fontStyle:'bold',textColor:[180,95,6]}},body:[
+      ['Fecha:',fmtDate(dd.fecha)],
+      ['Colaborador:',dd.colaborador||'—'],
+      ['Puesto:',dd.puesto||'—'],
+      ['Centro:',dd.centro||'—'],
+      ['Supervisor:',dd.supervisor||'—']
+    ]});y=doc.lastAutoTable.finalY+6;
+
+    sec('Motivo de la Carta');
+    doc.autoTable({startY:y,...tblOpts,columnStyles:{0:{cellWidth:45,fillColor:[253,235,220],fontStyle:'bold',textColor:[180,95,6]}},body:[
+      ['Tipo de Situación:',dd.tipo||'—'],
+      ['Descripción:',dd.situacion||'—'],
+      ['Antecedentes:',dd.antecedentes||'Sin antecedentes registrados']
+    ]});y=doc.lastAutoTable.finalY+6;
+
+    if(dd.compromisos?.length){
+      sec('Compromisos Acordados');
+      doc.autoTable({startY:y,...tblOpts,head:[['#','Compromiso','Fecha Límite','Indicador de Cumplimiento']],body:dd.compromisos.map((c,i)=>[i+1,c.compromiso,fmtDate(c.fechaLimite),c.indicador||'—']),columnStyles:{0:{cellWidth:10},1:{cellWidth:70},2:{cellWidth:28},3:{cellWidth:50}}});
+      y=doc.lastAutoTable.finalY+6;
+    }
+
+    if(dd.consecuencias){sec('Consecuencias de Incumplimiento');addText(dd.consecuencias);}
+
+    sec('Seguimiento');
+    doc.autoTable({startY:y,...tblOpts,columnStyles:{0:{cellWidth:45,fillColor:[253,235,220],fontStyle:'bold',textColor:[180,95,6]}},body:[
+      ['Fecha de Revisión:',fmtDate(dd.fechaRevision)||'—'],
+      ['Responsable:',dd.responsableSeguimiento||'—']
+    ]});y=doc.lastAutoTable.finalY+6;
+
+    if(dd.observaciones){sec('Observaciones');addText(dd.observaciones);}
+
+    // Firmas
+    if(dd.firmas?.length){
+      y += 10;
+      if(y > maxY - 50) { newPage(); }
+      sec('Firmas');
+      y += 12;
+      const firmasPerRow = 2;
+      const firmaW = textWidth / firmasPerRow;
+      const lineW = 55;
+      
+      dd.firmas.forEach((f,i)=>{
+        const col = i % firmasPerRow;
+        if(col === 0 && i > 0) y += 35;
+        if(y > maxY - 40){ newPage(); y += 20; }
+        
+        const cx = m + firmaW*col + firmaW/2;
+        doc.setDrawColor(74,74,74);
+        doc.setLineWidth(.4);
+        doc.line(cx - lineW/2, y, cx + lineW/2, y);
+        doc.setFontSize(9);
+        doc.setTextColor(50,50,50);
+        doc.setFont('helvetica','bold');
+        const nombreLines = doc.splitTextToSize(f.nombre||'', lineW);
+        doc.text(nombreLines, cx, y+5, {align:'center'});
+        doc.setFontSize(8);
+        doc.setFont('helvetica','normal');
+        doc.setTextColor(113,128,150);
+        doc.text(f.cargo||'', cx, y+10 + (nombreLines.length-1)*4, {align:'center'});
       });
     }
 
