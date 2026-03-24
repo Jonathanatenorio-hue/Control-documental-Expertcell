@@ -76,6 +76,7 @@ table.data-tbl tr:hover td{background:#F7FAFC}
 .badge-aviso{background:var(--warnlt);color:var(--warn)}
 .badge-ret{background:#E8F5E9;color:#2E7D32}
 .badge-pln{background:#E3F2FD;color:#1565C0}
+.badge-cc{background:#FFF3E0;color:#E65100}
 .badge-acta{background:#FFEBEE;color:#C62828}
 .badge-baja{background:#F3E5F5;color:#7B1FA2}
 .badge-firmado{background:var(--oklt);color:var(--ok)}
@@ -193,6 +194,7 @@ table.data-tbl tr:hover td{background:#F7FAFC}
     <button class="sb-item" onclick="showPage('avisos')"><span class="icon">📢</span><span>Avisos</span><span class="sb-badge" id="badge-avi">0</span></button>
     <button class="sb-item" onclick="showPage('retroalimentaciones')"><span class="icon">💬</span><span>Retroalim.</span><span class="sb-badge" id="badge-ret">0</span></button>
     <button class="sb-item" onclick="showPage('planes')"><span class="icon">📊</span><span>Planes</span><span class="sb-badge" id="badge-pln">0</span></button>
+    <button class="sb-item" onclick="showPage('cartas')"><span class="icon">📝</span><span>Cartas Comp.</span><span class="sb-badge" id="badge-cc">0</span></button>
     <button class="sb-item" onclick="showPage('actas')"><span class="icon">⚠️</span><span>Actas</span><span class="sb-badge" id="badge-act">0</span></button>
     <button class="sb-item" onclick="showPage('bajas')"><span class="icon">🚪</span><span>Bajas</span><span class="sb-badge" id="badge-baj">0</span></button>
     <div class="sb-section">Sistema</div>
@@ -528,12 +530,12 @@ let currentPage = 'dashboard';
 function showPage(page){
   currentPage = page;
   document.querySelectorAll('.sb-item').forEach(b=>b.classList.remove('active'));
-  const labels = {dashboard:'Dashboard',nuevo:'Nuevo Documento',minutas:'Minutas',avisos:'Avisos',retroalimentaciones:'Retroalimentaciones',planes:'Planes de Trabajo',actas:'Actas Administrativas',bajas:'Bajas',drive:'Configuración Google Drive',admin:'Administración'};
+  const labels = {dashboard:'Dashboard',nuevo:'Nuevo Documento',minutas:'Minutas',avisos:'Avisos',retroalimentaciones:'Retroalimentaciones',planes:'Planes de Trabajo',cartas:'Cartas Compromiso',actas:'Actas Administrativas',bajas:'Bajas',drive:'Configuración Google Drive',admin:'Administración'};
   document.getElementById('page-title').textContent = labels[page]||'';
-  const navMap = {dashboard:0,nuevo:1,minutas:2,avisos:3,retroalimentaciones:4,planes:5,actas:6,bajas:7,drive:8,admin:9};
+  const navMap = {dashboard:0,nuevo:1,minutas:2,avisos:3,retroalimentaciones:4,planes:5,cartas:6,actas:7,bajas:8,drive:9,admin:10};
   if(navMap[page]!==undefined) document.querySelectorAll('.sb-item')[navMap[page]]?.classList.add('active');
   updateBadges();
-  const renderers = {dashboard:renderDashboard,nuevo:renderNuevo,minutas:()=>renderHistorial('minuta'),avisos:()=>renderHistorial('aviso'),retroalimentaciones:()=>renderHistorial('retroalimentacion'),planes:()=>renderHistorial('plantrabajo'),actas:()=>renderHistorial('actaadmin'),bajas:()=>renderHistorial('baja'),drive:renderDrive,admin:renderAdmin};
+  const renderers = {dashboard:renderDashboard,nuevo:renderNuevo,minutas:()=>renderHistorial('minuta'),avisos:()=>renderHistorial('aviso'),retroalimentaciones:()=>renderHistorial('retroalimentacion'),planes:()=>renderHistorial('plantrabajo'),cartas:()=>renderHistorial('cartacompromiso'),actas:()=>renderHistorial('actaadmin'),bajas:()=>renderHistorial('baja'),drive:renderDrive,admin:renderAdmin};
   (renderers[page]||renderDashboard)();
 }
 
@@ -543,6 +545,7 @@ function updateBadges(){
   document.getElementById('badge-avi').textContent=docs.filter(d=>d.type==='aviso').length;
   document.getElementById('badge-ret').textContent=docs.filter(d=>d.type==='retroalimentacion').length;
   document.getElementById('badge-pln').textContent=docs.filter(d=>d.type==='plantrabajo').length;
+  document.getElementById('badge-cc').textContent=docs.filter(d=>d.type==='cartacompromiso').length;
   document.getElementById('badge-act').textContent=docs.filter(d=>d.type==='actaadmin').length;
   document.getElementById('badge-baj').textContent=docs.filter(d=>d.type==='baja').length;
 }
@@ -550,6 +553,8 @@ function updateBadges(){
 // ══════════════════════════════════════════════════════
 // DASHBOARD
 // ══════════════════════════════════════════════════════
+let dashboardSearch = '';
+
 function renderDashboard(){
   const docs=loadDocs();
   const minutas=docs.filter(d=>d.type==='minuta');
@@ -564,18 +569,33 @@ function renderDashboard(){
     <div class="stat-card orange"><div class="stat-num">${pendientes.length}</div><div class="stat-label">Pendientes de firma</div></div>
   </div>`;
 
-  // Recent docs
+  // Recent docs with search
   h+='<div class="table-wrap">';
-  h+='<div class="table-toolbar"><span style="font-weight:700;font-size:14px;color:var(--dk)">📄 Documentos Recientes</span><div style="margin-left:auto"><button class="btn btn-pri btn-sm" onclick="showPage(\'nuevo\')">➕ Nuevo</button></div></div>';
+  h+=`<div class="table-toolbar">
+    <span style="font-weight:700;font-size:14px;color:var(--dk)">📄 Documentos Recientes</span>
+    <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+      <input type="text" id="dashboard-search" placeholder="🔍 Buscar por nombre, folio, título..." style="padding:8px 12px;border:1px solid #ddd;border-radius:6px;width:250px" value="${dashboardSearch}" oninput="dashboardSearch=this.value;renderDashboard()">
+      <button class="btn btn-pri btn-sm" onclick="showPage('nuevo')">➕ Nuevo</button>
+    </div>
+  </div>`;
 
   if(docs.length===0){
     h+=`<div class="empty-state"><div class="icon">📂</div><h3>Sin documentos aún</h3><p>Crea tu primera minuta o aviso para comenzar.</p><button class="btn btn-pri" onclick="showPage('nuevo')">➕ Crear documento</button></div>`;
   } else {
-    const recent = docs.slice().sort((a,b)=>b.createdAt-a.createdAt).slice(0,8);
-    h+=`<table class="data-tbl"><thead><tr><th>Folio</th><th>Tipo</th><th>Título</th><th>Fecha</th><th>Estatus</th><th>Evidencia</th><th>Acciones</th></tr></thead><tbody>`;
+    let filtered = docs.slice().sort((a,b)=>b.createdAt-a.createdAt);
+    if(dashboardSearch.trim()){
+      const q = dashboardSearch.toLowerCase();
+      filtered = filtered.filter(d => {
+        const dd = d.data || {};
+        const searchFields = [d.folio, d.title, dd.colaborador, dd.convoca, dd.emitido, dd.supervisor, dd.asunto].filter(Boolean).join(' ').toLowerCase();
+        return searchFields.includes(q);
+      });
+    }
+    const recent = filtered.slice(0,15);
+    h+=`<table class="data-tbl"><thead><tr><th>Folio</th><th>Tipo</th><th>Título / Persona</th><th>Fecha</th><th>Estatus</th><th>Evidencia</th><th>Acciones</th></tr></thead><tbody>`;
     recent.forEach(d=>{
-      const typeNames = {minuta:'Minuta',aviso:'Aviso',retroalimentacion:'Retroalim.',plantrabajo:'Plan Trabajo',actaadmin:'Acta Admin.',baja:'Baja'};
-      const typeClasses = {minuta:'badge-minuta',aviso:'badge-aviso',retroalimentacion:'badge-ret',plantrabajo:'badge-pln',actaadmin:'badge-acta',baja:'badge-baja'};
+      const typeNames = {minuta:'Minuta',aviso:'Aviso',retroalimentacion:'Retroalim.',plantrabajo:'Plan Trabajo',cartacompromiso:'Carta Comp.',actaadmin:'Acta Admin.',baja:'Baja'};
+      const typeClasses = {minuta:'badge-minuta',aviso:'badge-aviso',retroalimentacion:'badge-ret',plantrabajo:'badge-pln',cartacompromiso:'badge-cc',actaadmin:'badge-acta',baja:'badge-baja'};
       const typeClass = typeClasses[d.type]||'badge-aviso';
       const typeName = typeNames[d.type]||d.type;
       const statusClass = d.status==='firmado'?'badge-firmado':d.status==='pendiente'?'badge-pendiente':'badge-borrador';
@@ -608,13 +628,13 @@ function renderDashboard(){
 // ══════════════════════════════════════════════════════
 function renderHistorial(type){
   const docs=loadDocs().filter(d=>d.type===type).sort((a,b)=>b.createdAt-a.createdAt);
-  const typeNames={minuta:'Minutas',aviso:'Avisos',retroalimentacion:'Retroalimentaciones',plantrabajo:'Planes de Trabajo',actaadmin:'Actas Administrativas',baja:'Bajas'};
-  const typeIcons={minuta:'📋',aviso:'📢',retroalimentacion:'💬',plantrabajo:'📊',actaadmin:'⚠️',baja:'🚪'};
+  const typeNames={minuta:'Minutas',aviso:'Avisos',retroalimentacion:'Retroalimentaciones',plantrabajo:'Planes de Trabajo',cartacompromiso:'Cartas Compromiso',actaadmin:'Actas Administrativas',baja:'Bajas'};
+  const typeIcons={minuta:'📋',aviso:'📢',retroalimentacion:'💬',plantrabajo:'📊',cartacompromiso:'📝',actaadmin:'⚠️',baja:'🚪'};
   const typeName=typeNames[type]||type;
 
   let h=`<div class="table-wrap">
     <div class="table-toolbar">
-      <input class="search-box" placeholder="🔍 Buscar por folio, título..." oninput="filterTable(this.value,'${type}')">
+      <input class="search-box" placeholder="🔍 Buscar por folio, título, persona..." oninput="filterTable(this.value,'${type}')">
       <select class="filter-sel" onchange="filterByStatus(this.value,'${type}')">
         <option value="">Todos los estatus</option><option value="firmado">Firmados</option><option value="pendiente">Pendientes</option>
       </select>
@@ -622,8 +642,8 @@ function renderHistorial(type){
         <option value="">Con/Sin evidencia</option><option value="si">Con evidencia</option><option value="no">Sin evidencia</option>
       </select>`;
   
-  // Filtros adicionales para retroalimentación
-  if(type === 'retroalimentacion'){
+  // Filtros adicionales para retroalimentación y carta compromiso
+  if(type === 'retroalimentacion' || type === 'cartacompromiso'){
     h += `<select class="filter-sel" onchange="filterBySupervisor(this.value,'${type}')">
         <option value="">Todos los supervisores</option>
         ${SUPERVISORES.map(s => `<option value="${s}">${s}</option>`).join('')}
@@ -640,9 +660,9 @@ function renderHistorial(type){
   if(docs.length===0){
     h+=`<div class="empty-state"><div class="icon">${typeIcons[type]||'📄'}</div><h3>No hay ${typeName.toLowerCase()}</h3><p>Crea uno nuevo para comenzar.</p></div>`;
   } else {
-    // Encabezados especiales para retroalimentación
-    if(type === 'retroalimentacion'){
-      h+=`<table class="data-tbl" id="tbl-${type}"><thead><tr><th>Folio</th><th>Colaborador</th><th>Supervisor</th><th>Tipo</th><th>Fecha</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody>`;
+    // Encabezados especiales para retroalimentación y carta compromiso
+    if(type === 'retroalimentacion' || type === 'cartacompromiso'){
+      h+=`<table class="data-tbl" id="tbl-${type}"><thead><tr><th>Folio</th><th>Colaborador</th><th>Jefe Directo</th><th>Tipo</th><th>Fecha</th><th>Estatus</th><th>Acciones</th></tr></thead><tbody>`;
       docs.forEach(d=>{
         const dd = d.data || {};
         const sc=d.status==='firmado'?'badge-firmado':d.status==='pendiente'?'badge-pendiente':'badge-borrador';
@@ -657,6 +677,40 @@ function renderHistorial(type){
             <button class="btn btn-ghost btn-sm" onclick="editDoc('${d.id}')">✏️</button>
             <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}')">👁️</button>
             <button class="btn btn-ghost btn-sm" onclick="downloadDocPDF('${d.id}')">📕</button>
+            <button class="btn btn-ghost btn-sm" onclick="uploadEvidence('${d.id}')">📎</button>
+            <button class="btn-danger-ghost" onclick="deleteDoc('${d.id}')">🗑️</button>
+          </td>
+        </tr>`;
+      });
+    } else if(type === 'minuta'){
+      // Minutas con columna de participantes
+      h+=`<table class="data-tbl" id="tbl-${type}"><thead><tr><th>Folio</th><th>Título</th><th>Participantes</th><th>Fecha</th><th>Estatus</th><th>Evidencia</th><th>Acciones</th></tr></thead><tbody>`;
+      docs.forEach(d=>{
+        const dd = d.data || {};
+        const sc=d.status==='firmado'?'badge-firmado':d.status==='pendiente'?'badge-pendiente':'badge-borrador';
+        const ev=(d.evidence||d.evidenceUrl)?'<span class="evidence-indicator evidence-yes">✅ Sí</span>':'<span class="evidence-indicator evidence-no">— No</span>';
+        // Determinar participantes
+        let participantes = '';
+        if(dd.asistentes?.length){
+          if(dd.asistentes.length === 1){
+            participantes = dd.asistentes[0].nombre || '—';
+          } else if(dd.asistentes.length <= 3){
+            participantes = dd.asistentes.map(a=>a.nombre).filter(Boolean).join(', ');
+          } else {
+            participantes = `Equipo (${dd.asistentes.length} personas)`;
+          }
+        } else {
+          participantes = dd.convoca || '—';
+        }
+        h+=`<tr data-folio="${(d.folio||'').toLowerCase()}" data-title="${(d.title||'').toLowerCase()}" data-status="${d.status}" data-evidence="${(d.evidence||d.evidenceUrl)?'si':'no'}" data-colaborador="${participantes.toLowerCase()}">
+          <td><strong>${d.folio||'—'}</strong></td><td>${d.title||'—'}</td><td>${participantes}</td><td>${d.displayDate||'—'}</td>
+          <td><span class="badge ${sc}">${d.status==='firmado'?'Firmado':d.status==='pendiente'?'Pendiente':'Borrador'}</span></td>
+          <td>${ev}</td>
+          <td>
+            <button class="btn btn-ghost btn-sm" onclick="editDoc('${d.id}')">✏️</button>
+            <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}')">👁️</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadDocPDF('${d.id}')">📕</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadDocWord('${d.id}')">📄</button>
             <button class="btn btn-ghost btn-sm" onclick="uploadEvidence('${d.id}')">📎</button>
             <button class="btn-danger-ghost" onclick="deleteDoc('${d.id}')">🗑️</button>
           </td>
@@ -928,6 +982,22 @@ function editDoc(id){
       document.getElementById('f-aafirma3').value = dd.firmaEmite || '';
       document.getElementById('f-aafirma4').value = dd.firmaTestigo || '';
       document.getElementById('f-tabla').value = dd.tabla || '';
+    } else if(d.type === 'cartacompromiso'){
+      document.getElementById('f-ccfolio').value = d.folio || '';
+      document.getElementById('f-ccfecha').value = dd.fecha || '';
+      document.getElementById('f-cccolaborador').value = dd.colaborador || '';
+      document.getElementById('f-ccpuesto').value = dd.puesto || '';
+      document.getElementById('f-cccentro').value = dd.centro || '';
+      document.getElementById('f-ccsupervisor').value = dd.supervisor || '';
+      document.getElementById('f-cctipo').value = dd.tipo || '';
+      document.getElementById('f-ccsituacion').value = dd.situacion || '';
+      document.getElementById('f-ccantecedentes').value = dd.antecedentes || '';
+      document.getElementById('f-ccconsecuencias').value = dd.consecuencias || '';
+      document.getElementById('f-ccrevision').value = dd.fechaRevision || '';
+      document.getElementById('f-ccresponsable').value = dd.responsableSeguimiento || '';
+      document.getElementById('f-ccobs').value = dd.observaciones || '';
+      if(dd.compromisos?.length){formCompromisos = dd.compromisos; renderMiniTable('tbl-compromisos',[{key:'compromiso',label:'Compromiso',ph:'Descripción del compromiso'},{key:'fechaLimite',label:'Fecha Límite',type:'date'},{key:'indicador',label:'Indicador de Cumplimiento',ph:'Cómo se medirá'}],formCompromisos,'formCompromisos');}
+      if(dd.firmas?.length){formFirmasCC = dd.firmas; renderMiniTable('tbl-firmasCC',[{key:'nombre',label:'Nombre',type:'colaborador'},{key:'cargo',label:'Cargo',type:'puesto'}],formFirmasCC,'formFirmasCC');}
     } else if(d.type === 'baja'){
       document.getElementById('f-bfolio').value = d.folio || '';
       document.getElementById('f-bfecha').value = dd.fecha || '';
@@ -1682,11 +1752,11 @@ function renderFormContent(){
       <div class="fg"><label>Colaborador <span class="req">*</span></label><select id="f-cccolaborador">${optionsList(COLABORADORES)}</select></div>
       <div class="fg"><label>Puesto</label><select id="f-ccpuesto">${optionsList(PUESTOS)}</select></div>
       <div class="fg"><label>Centro</label><select id="f-cccentro"><option>Operación Global</option><option>Edificio Inbursa</option><option>Torre JV</option></select></div>
-      <div class="fg"><label>Supervisor</label><select id="f-ccsupervisor">${optionsList(SUPERVISORES)}</select></div>
+      <div class="fg"><label>Jefe Directo</label><select id="f-ccsupervisor">${optionsList(SUPERVISORES)}</select></div>
     </div>
     
     <div class="sec-title">📋 Motivo de la Carta</div>
-    <div class="fg"><label>Tipo de Situación</label><select id="f-cctipo"><option>Bajo rendimiento</option><option>Incumplimiento de indicadores</option><option>Faltas de asistencia</option><option>Retardos recurrentes</option><option>Comportamiento inadecuado</option><option>Incumplimiento de políticas</option><option>Otro</option></select></div>
+    <div class="fg"><label>Tipo de Situación</label><select id="f-cctipo"><option>Bajo rendimiento</option><option>Incumplimiento de indicadores</option><option>Faltas de asistencia</option><option>Retardos recurrentes</option><option>Comportamiento inadecuado</option><option>Incumplimiento de políticas</option><option>Procesos</option><option>Otro</option></select></div>
     <div class="fg"><label>Descripción de la Situación <span class="req">*</span></label><textarea id="f-ccsituacion" rows="3" placeholder="Describe la situación o problema que origina esta carta..."></textarea></div>
     <div class="fg"><label>Antecedentes</label><textarea id="f-ccantecedentes" rows="2" placeholder="Llamadas de atención previas, retroalimentaciones, etc..."></textarea></div>
     
@@ -2568,7 +2638,7 @@ function generateDocPDF(d){
       ['Colaborador:',dd.colaborador||'—'],
       ['Puesto:',dd.puesto||'—'],
       ['Centro:',dd.centro||'—'],
-      ['Supervisor:',dd.supervisor||'—']
+      ['Jefe Directo:',dd.supervisor||'—']
     ]});y=doc.lastAutoTable.finalY+6;
 
     sec('Motivo de la Carta');
