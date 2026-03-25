@@ -1933,7 +1933,7 @@ function renderMiniTable(containerId, cols, data, ref){
         // Desplegable de puestos
         h+=`<td><select onchange="updateFormRow('${ref}',${i},'${col.key}',this.value)">`;
         h+='<option value="">Seleccionar...</option>';
-        const allPuestos = ['EJECUTIVO','SUPERVISOR','GERENTE','SUBDISTRIBUIDOR','FACTURACION','MESA DE CONTROL','BASE DE DATOS','COORDINADOR'];
+        const allPuestos = ['DIRECTOR','GERENTE','COORDINADOR','SUPERVISOR','EJECUTIVO','SUBDISTRIBUIDOR','FACTURACION','MESA DE CONTROL','BASE DE DATOS','CAPACITADOR','AUXILIAR'];
         allPuestos.forEach(p => h+=`<option${row[col.key]===p?' selected':''}>${p}</option>`);
         h+='</select></td>';
       } else if(col.type==='date'){
