@@ -600,9 +600,9 @@ function renderDashboard(){
         <td>${evid}</td>
         <td>
           <button class="btn btn-ghost btn-sm" onclick="editDoc('${d.id}')" title="Editar">✏️</button>
+          <button class="btn btn-ghost btn-sm" onclick="duplicateDoc('${d.id}')" title="Duplicar">📋</button>
           <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}')" title="Ver detalle">👁️</button>
           <button class="btn btn-ghost btn-sm" onclick="downloadDocPDF('${d.id}')" title="PDF">📕</button>
-          <button class="btn btn-ghost btn-sm" onclick="downloadDocWord('${d.id}')" title="Word">📄</button>
           <button class="btn btn-ghost btn-sm" onclick="uploadEvidence('${d.id}')" title="Subir evidencia">📎</button>
           <button class="btn-danger-ghost" onclick="deleteDoc('${d.id}')" title="Eliminar">🗑️</button>
         </td>
@@ -707,12 +707,12 @@ function renderHistorial(type){
           <td><span class="badge ${sc}">${d.status==='firmado'?'Firmado':d.status==='pendiente'?'Pendiente':'Borrador'}</span></td>
           <td>${ev}</td>
           <td>
-            <button class="btn btn-ghost btn-sm" onclick="editDoc('${d.id}')">✏️</button>
-            <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}')">👁️</button>
-            <button class="btn btn-ghost btn-sm" onclick="downloadDocPDF('${d.id}')">📕</button>
-            <button class="btn btn-ghost btn-sm" onclick="downloadDocWord('${d.id}')">📄</button>
-            <button class="btn btn-ghost btn-sm" onclick="uploadEvidence('${d.id}')">📎</button>
-            <button class="btn-danger-ghost" onclick="deleteDoc('${d.id}')">🗑️</button>
+            <button class="btn btn-ghost btn-sm" onclick="editDoc('${d.id}')" title="Editar">✏️</button>
+            <button class="btn btn-ghost btn-sm" onclick="duplicateDoc('${d.id}')" title="Duplicar">📋</button>
+            <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}')" title="Ver">👁️</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadDocPDF('${d.id}')" title="PDF">📕</button>
+            <button class="btn btn-ghost btn-sm" onclick="uploadEvidence('${d.id}')" title="Evidencia">📎</button>
+            <button class="btn-danger-ghost" onclick="deleteDoc('${d.id}')" title="Eliminar">🗑️</button>
           </td>
         </tr>`;
       });
@@ -726,12 +726,12 @@ function renderHistorial(type){
           <td><span class="badge ${sc}">${d.status==='firmado'?'Firmado':d.status==='pendiente'?'Pendiente':'Borrador'}</span></td>
           <td>${ev}</td>
           <td>
-            <button class="btn btn-ghost btn-sm" onclick="editDoc('${d.id}')">✏️</button>
-            <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}')">👁️</button>
-            <button class="btn btn-ghost btn-sm" onclick="downloadDocPDF('${d.id}')">📕</button>
-            <button class="btn btn-ghost btn-sm" onclick="downloadDocWord('${d.id}')">📄</button>
-            <button class="btn btn-ghost btn-sm" onclick="uploadEvidence('${d.id}')">📎</button>
-            <button class="btn-danger-ghost" onclick="deleteDoc('${d.id}')">🗑️</button>
+            <button class="btn btn-ghost btn-sm" onclick="editDoc('${d.id}')" title="Editar">✏️</button>
+            <button class="btn btn-ghost btn-sm" onclick="duplicateDoc('${d.id}')" title="Duplicar">📋</button>
+            <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}')" title="Ver">👁️</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadDocPDF('${d.id}')" title="PDF">📕</button>
+            <button class="btn btn-ghost btn-sm" onclick="uploadEvidence('${d.id}')" title="Evidencia">📎</button>
+            <button class="btn-danger-ghost" onclick="deleteDoc('${d.id}')" title="Eliminar">🗑️</button>
           </td>
         </tr>`;
       });
