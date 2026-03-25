@@ -1127,17 +1127,45 @@ function processFile(file, id){
 }
 
 function saveEvidence(id){
-  if(!pendingEvidence)return;
-  const docs=loadDocs(); const d=docs.find(x=>x.id===id);
+  if(!pendingEvidence){
+    toast('❌ No hay archivo seleccionado','err');
+    return;
+  }
+  
+  // Check file size - base64 is ~33% larger than original
+  const sizeInMB = (pendingEvidence.length * 0.75) / (1024 * 1024);
+  
+  const docs=loadDocs(); 
+  const d=docs.find(x=>x.id===id);
+  
   if(d){
-    d.evidence=pendingEvidence;
-    d.evidenceDate=Date.now();
-    d.status='firmado';
-    saveDocs(docs);
-    // Upload evidence to Drive folder
-    uploadEvidenceToDrive(id, pendingEvidence, d.folio);
-    toast('✅ Evidencia guardada y documento marcado como firmado');
-    pendingEvidence=null;
+    // If file is too large (>2MB), only save reference, not the actual file
+    if(sizeInMB > 2){
+      d.evidenceUrl = 'large_file_uploaded';
+      d.evidenceName = 'Documento firmado (archivo grande)';
+      toast('⚠️ Archivo grande - se marca como firmado pero no se guarda localmente','info');
+    } else {
+      d.evidence = pendingEvidence;
+    }
+    
+    d.evidenceDate = Date.now();
+    d.status = 'firmado';
+    
+    try {
+      saveDocs(docs);
+      // Upload evidence to Drive folder
+      uploadEvidenceToDrive(id, pendingEvidence, d.folio);
+      toast('✅ Evidencia guardada y documento marcado como firmado');
+    } catch(e) {
+      // If localStorage fails, try without saving the file
+      d.evidence = null;
+      d.evidenceUrl = 'uploaded_to_drive';
+      saveDocs(docs);
+      uploadEvidenceToDrive(id, pendingEvidence, d.folio);
+      toast('✅ Documento firmado (evidencia solo en Drive)','info');
+    }
+    
+    pendingEvidence = null;
     document.querySelector('.modal-overlay')?.remove();
     showPage(currentPage);
   }
