@@ -1072,11 +1072,12 @@ function editDoc(id){
 // UPLOAD EVIDENCE (Modal)
 // ══════════════════════════════════════════════════════
 function uploadEvidence(id){
+  pendingEvidence = null; // Reset
   let h=`<div class="modal-overlay" onclick="if(event.target===this)this.remove()"><div class="modal" style="max-width:500px">
     <div class="modal-hdr"><h2>📎 Subir Evidencia Firmada</h2><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button></div>
     <div class="modal-body">
       <p style="font-size:13px;color:var(--muted);margin-bottom:14px">Sube una foto o escaneo del documento firmado como evidencia.</p>
-      <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()"
+      <div class="upload-zone" id="drop-zone" onclick="document.getElementById('evidence-file-input').click()"
         ondragover="event.preventDefault();this.classList.add('dragover')"
         ondragleave="this.classList.remove('dragover')"
         ondrop="event.preventDefault();this.classList.remove('dragover');handleFileDrop(event,'${id}')">
@@ -1084,12 +1085,12 @@ function uploadEvidence(id){
         <div class="upload-text"><b>Clic para seleccionar</b> o arrastra aquí</div>
         <div style="font-size:11px;color:var(--muted);margin-top:4px">JPG, PNG o PDF • Máx 5MB</div>
       </div>
-      <input type="file" id="file-input" accept="image/*,.pdf" style="display:none" onchange="handleFileSelect(this,'${id}')">
-      <div id="file-preview-area"></div>
+      <input type="file" id="evidence-file-input" accept="image/*,.pdf" style="display:none" onchange="handleFileSelect(this,'${id}')">
+      <div id="evidence-preview-area"></div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-ghost" onclick="this.closest('.modal-overlay').remove()">Cancelar</button>
-      <button class="btn btn-ok" id="btn-save-evidence" onclick="saveEvidence('${id}')" disabled>💾 Guardar evidencia</button>
+      <button class="btn btn-pri" id="btn-save-evidence" onclick="saveEvidence('${id}')" style="opacity:0.5;pointer-events:none">💾 Guardar evidencia</button>
     </div>
   </div></div>`;
   document.body.insertAdjacentHTML('beforeend',h);
@@ -1110,12 +1111,17 @@ function processFile(file, id){
     pendingEvidence = e.target.result;
     let preview='';
     if(file.type.startsWith('image/')){
-      preview=`<div class="file-preview"><img src="${e.target.result}"><div class="info"><div class="name">${file.name}</div><div class="size">${(file.size/1024).toFixed(1)} KB</div></div></div>`;
+      preview=`<div class="file-preview"><img src="${e.target.result}" style="max-width:100%;max-height:200px;border-radius:8px"><div class="info" style="margin-top:8px"><div class="name" style="font-weight:600">${file.name}</div><div class="size" style="color:var(--muted);font-size:12px">${(file.size/1024).toFixed(1)} KB</div></div></div>`;
     } else {
-      preview=`<div class="file-preview"><div style="font-size:28px">📄</div><div class="info"><div class="name">${file.name}</div><div class="size">${(file.size/1024).toFixed(1)} KB</div></div></div>`;
+      preview=`<div class="file-preview" style="padding:20px;text-align:center"><div style="font-size:40px">📄</div><div class="name" style="font-weight:600;margin-top:8px">${file.name}</div><div class="size" style="color:var(--muted);font-size:12px">${(file.size/1024).toFixed(1)} KB</div></div>`;
     }
-    document.getElementById('file-preview-area').innerHTML=preview;
-    document.getElementById('btn-save-evidence').disabled=false;
+    document.getElementById('evidence-preview-area').innerHTML=preview;
+    const btn = document.getElementById('btn-save-evidence');
+    if(btn){
+      btn.style.opacity='1';
+      btn.style.pointerEvents='auto';
+    }
+    toast('✅ Archivo cargado, ahora haz clic en Guardar','info');
   };
   reader.readAsDataURL(file);
 }
