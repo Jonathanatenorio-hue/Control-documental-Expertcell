@@ -673,11 +673,12 @@ function renderHistorial(type){
           <td>${d.displayDate||'—'}</td>
           <td><span class="badge ${sc}">${d.status==='firmado'?'Firmado':'Pendiente'}</span></td>
           <td>
-            <button class="btn btn-ghost btn-sm" onclick="editDoc('${d.id}')">✏️</button>
-            <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}')">👁️</button>
-            <button class="btn btn-ghost btn-sm" onclick="downloadDocPDF('${d.id}')">📕</button>
-            <button class="btn btn-ghost btn-sm" onclick="uploadEvidence('${d.id}')">📎</button>
-            <button class="btn-danger-ghost" onclick="deleteDoc('${d.id}')">🗑️</button>
+            <button class="btn btn-ghost btn-sm" onclick="editDoc('${d.id}')" title="Editar">✏️</button>
+            <button class="btn btn-ghost btn-sm" onclick="duplicateDoc('${d.id}')" title="Duplicar">📋</button>
+            <button class="btn btn-ghost btn-sm" onclick="viewDoc('${d.id}')" title="Ver">👁️</button>
+            <button class="btn btn-ghost btn-sm" onclick="downloadDocPDF('${d.id}')" title="PDF">📕</button>
+            <button class="btn btn-ghost btn-sm" onclick="uploadEvidence('${d.id}')" title="Evidencia">📎</button>
+            <button class="btn-danger-ghost" onclick="deleteDoc('${d.id}')" title="Eliminar">🗑️</button>
           </td>
         </tr>`;
       });
@@ -857,6 +858,39 @@ function deleteDoc(id){
   
   toast('🗑️ Documento eliminado','info');
   showPage(currentPage);
+}
+
+function duplicateDoc(id){
+  const docs = loadDocs();
+  const original = docs.find(x => x.id === id);
+  if(!original) return;
+  
+  // Crear copia con nuevo ID y folio
+  const newDoc = JSON.parse(JSON.stringify(original));
+  newDoc.id = 'doc_' + Date.now() + '_' + Math.random().toString(36).substr(2,9);
+  newDoc.createdAt = Date.now();
+  newDoc.status = 'pendiente';
+  
+  // Generar nuevo folio
+  const typePrefix = {minuta:'MIN',aviso:'AVI',retroalimentacion:'RET',plantrabajo:'PLN',cartacompromiso:'CC',actaadmin:'ACT',baja:'BAJ'};
+  const prefix = typePrefix[newDoc.type] || 'DOC';
+  const count = docs.filter(d => d.type === newDoc.type).length + 1;
+  newDoc.folio = `EC-${prefix}-${String(count).padStart(3,'0')}`;
+  
+  // Limpiar colaborador para que el usuario lo cambie
+  if(newDoc.data){
+    newDoc.data.colaborador = '';
+    newDoc.title = newDoc.title.replace(/–.*$/, '– (Duplicado)');
+  }
+  
+  // Guardar
+  docs.push(newDoc);
+  saveDocs(docs);
+  
+  toast('📋 Documento duplicado. Edita para cambiar el colaborador.','info');
+  
+  // Abrir para editar
+  editDoc(newDoc.id);
 }
 
 // ══════════════════════════════════════════════════════
@@ -2257,8 +2291,8 @@ function downloadDocWord(id){const docs=loadDocs();const d=docs.find(x=>x.id===i
 // ══════════════════════════════════════════════════════
 function generateDocPDF(d){
   const{jsPDF}=window.jspdf;const doc=new jsPDF('p','mm','letter');
-  const pageWidth=216, pageHeight=279, m=25;
-  const textWidth = 150; // Ancho muy conservador para evitar cortes
+  const pageWidth=216, pageHeight=279, m=20;
+  const textWidth = pageWidth - (m * 2); // Ancho correcto: 176mm
   let y=6;
   
   // Header
@@ -2270,14 +2304,14 @@ function generateDocPDF(d){
   doc.setDrawColor(27,117,187);doc.setLineWidth(0.7);doc.line(0,26,pageWidth,26);y=32;
 
   const dd=d.data||{};
-  const typeNames={minuta:'Minuta',aviso:'Aviso',retroalimentacion:'Retroalimentación',plantrabajo:'Plan de Trabajo',actaadmin:'Acta Administrativa',baja:'Baja de Personal'};
-  const maxY = pageHeight - 40; // Espacio amplio para el footer
+  const typeNames={minuta:'Minuta',aviso:'Aviso',retroalimentacion:'Retroalimentación',plantrabajo:'Plan de Trabajo',actaadmin:'Acta Administrativa',cartacompromiso:'Carta Compromiso',baja:'Baja de Personal'};
+  const maxY = pageHeight - 30; // Espacio para el footer
   
   const addFooter=(pn)=>{
     doc.setDrawColor(27,117,187);doc.setLineWidth(0.5);
-    doc.line(m, pageHeight-18, pageWidth-m, pageHeight-18);
+    doc.line(m, pageHeight-15, pageWidth-m, pageHeight-15);
     doc.setFontSize(7);doc.setTextColor(113,128,150);doc.setFont('helvetica','normal');
-    doc.text(`ExpertCell | ${typeNames[d.type]||d.type} | ${d.folio||''} | Pág ${pn}`, pageWidth/2, pageHeight-12, {align:'center'});
+    doc.text(`ExpertCell | ${typeNames[d.type]||d.type} | ${d.folio||''} | Pág ${pn}`, pageWidth/2, pageHeight-10, {align:'center'});
   };
   
   const newPage=()=>{
