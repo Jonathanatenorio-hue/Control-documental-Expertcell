@@ -553,8 +553,6 @@ function updateBadges(){
 // ══════════════════════════════════════════════════════
 // DASHBOARD
 // ══════════════════════════════════════════════════════
-let dashboardSearch = '';
-
 function renderDashboard(){
   const docs=loadDocs();
   const minutas=docs.filter(d=>d.type==='minuta');
@@ -574,7 +572,7 @@ function renderDashboard(){
   h+=`<div class="table-toolbar">
     <span style="font-weight:700;font-size:14px;color:var(--dk)">📄 Documentos Recientes</span>
     <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
-      <input type="text" id="dashboard-search" placeholder="🔍 Buscar por nombre, folio, título..." style="padding:8px 12px;border:1px solid #ddd;border-radius:6px;width:250px" value="${dashboardSearch}" oninput="dashboardSearch=this.value;renderDashboard()">
+      <input type="text" id="dashboard-search" placeholder="🔍 Buscar por nombre, folio, título..." style="padding:8px 12px;border:1px solid #ddd;border-radius:6px;width:250px" oninput="filterDashboard(this.value)">
       <button class="btn btn-pri btn-sm" onclick="showPage('nuevo')">➕ Nuevo</button>
     </div>
   </div>`;
@@ -582,25 +580,18 @@ function renderDashboard(){
   if(docs.length===0){
     h+=`<div class="empty-state"><div class="icon">📂</div><h3>Sin documentos aún</h3><p>Crea tu primera minuta o aviso para comenzar.</p><button class="btn btn-pri" onclick="showPage('nuevo')">➕ Crear documento</button></div>`;
   } else {
-    let filtered = docs.slice().sort((a,b)=>b.createdAt-a.createdAt);
-    if(dashboardSearch.trim()){
-      const q = dashboardSearch.toLowerCase();
-      filtered = filtered.filter(d => {
-        const dd = d.data || {};
-        const searchFields = [d.folio, d.title, dd.colaborador, dd.convoca, dd.emitido, dd.supervisor, dd.asunto].filter(Boolean).join(' ').toLowerCase();
-        return searchFields.includes(q);
-      });
-    }
-    const recent = filtered.slice(0,15);
-    h+=`<table class="data-tbl"><thead><tr><th>Folio</th><th>Tipo</th><th>Título / Persona</th><th>Fecha</th><th>Estatus</th><th>Evidencia</th><th>Acciones</th></tr></thead><tbody>`;
+    const recent = docs.slice().sort((a,b)=>b.createdAt-a.createdAt).slice(0,20);
+    h+=`<table class="data-tbl" id="dashboard-tbl"><thead><tr><th>Folio</th><th>Tipo</th><th>Título / Persona</th><th>Fecha</th><th>Estatus</th><th>Evidencia</th><th>Acciones</th></tr></thead><tbody>`;
     recent.forEach(d=>{
+      const dd = d.data || {};
       const typeNames = {minuta:'Minuta',aviso:'Aviso',retroalimentacion:'Retroalim.',plantrabajo:'Plan Trabajo',cartacompromiso:'Carta Comp.',actaadmin:'Acta Admin.',baja:'Baja'};
       const typeClasses = {minuta:'badge-minuta',aviso:'badge-aviso',retroalimentacion:'badge-ret',plantrabajo:'badge-pln',cartacompromiso:'badge-cc',actaadmin:'badge-acta',baja:'badge-baja'};
       const typeClass = typeClasses[d.type]||'badge-aviso';
       const typeName = typeNames[d.type]||d.type;
       const statusClass = d.status==='firmado'?'badge-firmado':d.status==='pendiente'?'badge-pendiente':'badge-borrador';
       const evid = (d.evidence||d.evidenceUrl)?`<span class="evidence-indicator evidence-yes">✅ Sí</span>`:`<span class="evidence-indicator evidence-no">— No</span>`;
-      h+=`<tr>
+      const searchData = [d.folio, d.title, dd.colaborador, dd.convoca, dd.emitido, dd.supervisor, dd.asunto].filter(Boolean).join(' ').toLowerCase();
+      h+=`<tr data-search="${searchData}">
         <td><strong>${d.folio||'—'}</strong></td>
         <td><span class="badge ${typeClass}">${typeName}</span></td>
         <td>${d.title||'Sin título'}</td>
@@ -621,6 +612,14 @@ function renderDashboard(){
   }
   h+='</div>';
   document.getElementById('page-content').innerHTML=h;
+}
+
+function filterDashboard(q){
+  const rows = document.querySelectorAll('#dashboard-tbl tbody tr');
+  q = q.toLowerCase();
+  rows.forEach(r => {
+    r.style.display = (!q || r.dataset.search.includes(q)) ? '' : 'none';
+  });
 }
 
 // ══════════════════════════════════════════════════════
@@ -2633,7 +2632,7 @@ function generateDocPDF(d){
     doc.setFontSize(9);doc.setTextColor(255,220,180);doc.text(`${dd.tipo||''}     Folio: ${d.folio||''}`,pageWidth/2,y+15.5,{align:'center'});y+=24;
 
     sec('Datos del Colaborador');
-    doc.autoTable({startY:y,...tblOpts,columnStyles:{0:{cellWidth:45,fillColor:[253,235,220],fontStyle:'bold',textColor:[180,95,6]}},body:[
+    doc.autoTable({startY:y,...tblOpts,columnStyles:{0:{cellWidth:50,fillColor:[253,235,220],fontStyle:'bold',textColor:[180,95,6]},1:{cellWidth:textWidth-50}},body:[
       ['Fecha:',fmtDate(dd.fecha)],
       ['Colaborador:',dd.colaborador||'—'],
       ['Puesto:',dd.puesto||'—'],
@@ -2642,7 +2641,7 @@ function generateDocPDF(d){
     ]});y=doc.lastAutoTable.finalY+6;
 
     sec('Motivo de la Carta');
-    doc.autoTable({startY:y,...tblOpts,columnStyles:{0:{cellWidth:45,fillColor:[253,235,220],fontStyle:'bold',textColor:[180,95,6]}},body:[
+    doc.autoTable({startY:y,...tblOpts,columnStyles:{0:{cellWidth:50,fillColor:[253,235,220],fontStyle:'bold',textColor:[180,95,6]},1:{cellWidth:textWidth-50}},body:[
       ['Tipo de Situación:',dd.tipo||'—'],
       ['Descripción:',dd.situacion||'—'],
       ['Antecedentes:',dd.antecedentes||'Sin antecedentes registrados']
@@ -2650,14 +2649,15 @@ function generateDocPDF(d){
 
     if(dd.compromisos?.length){
       sec('Compromisos Acordados');
-      doc.autoTable({startY:y,...tblOpts,head:[['#','Compromiso','Fecha Límite','Indicador de Cumplimiento']],body:dd.compromisos.map((c,i)=>[i+1,c.compromiso,fmtDate(c.fechaLimite),c.indicador||'—']),columnStyles:{0:{cellWidth:10},1:{cellWidth:70},2:{cellWidth:28},3:{cellWidth:50}}});
+      const col1=12, col2=textWidth*0.45, col3=35, col4=textWidth-col1-col2-col3;
+      doc.autoTable({startY:y,...tblOpts,head:[['#','Compromiso','Fecha Límite','Indicador de Cumplimiento']],body:dd.compromisos.map((c,i)=>[i+1,c.compromiso,fmtDate(c.fechaLimite),c.indicador||'—']),columnStyles:{0:{cellWidth:col1,halign:'center'},1:{cellWidth:col2},2:{cellWidth:col3,halign:'center'},3:{cellWidth:col4}}});
       y=doc.lastAutoTable.finalY+6;
     }
 
     if(dd.consecuencias){sec('Consecuencias de Incumplimiento');addText(dd.consecuencias);}
 
     sec('Seguimiento');
-    doc.autoTable({startY:y,...tblOpts,columnStyles:{0:{cellWidth:45,fillColor:[253,235,220],fontStyle:'bold',textColor:[180,95,6]}},body:[
+    doc.autoTable({startY:y,...tblOpts,columnStyles:{0:{cellWidth:50,fillColor:[253,235,220],fontStyle:'bold',textColor:[180,95,6]},1:{cellWidth:textWidth-50}},body:[
       ['Fecha de Revisión:',fmtDate(dd.fechaRevision)||'—'],
       ['Responsable:',dd.responsableSeguimiento||'—']
     ]});y=doc.lastAutoTable.finalY+6;
